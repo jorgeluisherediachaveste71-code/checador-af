@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d0d14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Checador AF">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+<title>Checador — Anytime Fitness</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --purple:#6b3fa0; --purple2:#8b5cc8; --purple3:#3a1d60;
+  --teal:#00c4b4; --teal2:#00a89a; --teal3:#00e5d2;
+  --dark:#0d0d14; --dark2:#13131f; --dark3:#1a1a2e;
+  --card:rgba(255,255,255,0.04); --card2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08); --border2:rgba(0,196,180,0.2);
+  --text:#f0eeff; --muted:#8a7fa8; --muted2:#b0a0cc;
+  --green:#2ecc71; --red:#e74c3c; --yellow:#f1c40f; --orange:#e67e22;
+  --radius:14px; --radius-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden;}
+html{background:var(--dark);}
+button{cursor:pointer;font-family:'Barlow',sans-serif;}
+input{font-family:'Barlow',sans-serif;}
+
+/* ══════ LAYOUT PC ══════ */
+.app-layout {
+  display:none;
+  min-height:100vh;
+  grid-template-columns:260px 1fr;
+  grid-template-rows:auto 1fr;
+}
+.app-layout.active { display:grid; }
+
+/* SIDEBAR */
+.sidebar {
+  grid-row:1/3;
+  background:var(--dark2);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  padding:28px 0 24px;
+  position:sticky;
+  top:0;
+  height:100vh;
+}
+.sidebar-brand {
+  padding:0 24px 28px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:20px;
+}
+.brand-logo {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:3px;
+  color:var(--teal);
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.brand-name {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:26px;
+  font-weight:900;
+  letter-spacing:1px;
+  line-height:1;
+}
+.brand-name span{color:var(--teal);}
+
+.nav-links { flex:1; padding:0 12px; }
+.nav-link {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:11px 14px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:600;
+  color:var(--muted2);
+  background:none;
+  border:none;
+  width:100%;
+  text-align:left;
+  transition:all .2s;
+  margin-bottom:4px;
+  letter-spacing:.3px;
+}
+.nav-link:hover { background:var(--card2); color:var(--text); }
+.nav-link.active { background:rgba(0,196,180,0.1); color:var(--teal); border:1px solid var(--border2); }
+.nav-icon { font-size:18px; width:22px; text-align:center; }
+.nav-badge { margin-left:auto; background:var(--teal); color:#000; font-size:9px; font-weight:800; padding:2px 7px; border-radius:10px; letter-spacing:.5px; }
+
+.sidebar-user {
+  padding:16px 24px 0;
+  border-top:1px solid var(--border);
+  margin-top:auto;
+}
+.su-name { font-size:13px; font-weight:700; margin-bottom:2px; }
+.su-rol { font-size:11px; color:var(--muted); }
+.su-actions { display:flex; gap:8px; margin-top:12px; }
+.su-btn { flex:1; padding:8px; border-radius:8px; font-size:11px; font-weight:600; border:1px solid var(--border); background:none; color:var(--muted2); transition:all .2s; }
+.su-btn:hover { background:var(--card2); color:var(--text); }
+.su-btn.danger:hover { border-color:rgba(231,76,60,.4); color:var(--red); }
+
+/* TOPBAR */
+.topbar {
+  background:rgba(13,13,20,0.95);
+  border-bottom:1px solid var(--border);
+  padding:14px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  backdrop-filter:blur(8px);
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+.topbar-title { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:800; letter-spacing:1px; }
+.topbar-right { display:flex; align-items:center; gap:16px; }
+.clock-display { font-family:'Barlow Condensed',sans-serif; font-size:28px; font-weight:700; color:var(--teal); letter-spacing:1px; }
+.date-display { font-size:12px; color:var(--muted); text-align:right; line-height:1.4; }
+.online-pill { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px; }
+.online-pill.on { background:rgba(46,204,113,.15); color:var(--green); border:1px solid rgba(46,204,113,.25); }
+.online-pill.off { background:rgba(231,76,60,.15); color:var(--red); border:1px solid rgba(231,76,60,.25); }
+.online-dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
+
+/* MAIN CONTENT */
+.main-content { padding:32px; overflow-y:auto; }
+
+/* ══════ TABS ══════ */
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* ══════ CHECAR TAB ══════ */
+.checar-grid {
+  display:grid;
+  grid-template-columns:400px 1fr;
+  gap:24px;
+  max-width:1100px;
+}
+
+.estado-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.estado-card::before {
+  content:'';
+  position:absolute;
+  top:-60px; left:-60px;
+  width:200px; height:200px;
+  background:radial-gradient(circle, rgba(0,196,180,0.08), transparent 70%);
+  pointer-events:none;
+}
+.estado-emp-avatar {
+  width:72px; height:72px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:26px; font-weight:800;
+  margin:0 auto 12px;
+  border:3px solid var(--border);
+}
+.estado-emp-name { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; letter-spacing:.5px; margin-bottom:2px; }
+.estado-emp-rol { font-size:12px; color:var(--muted); margin-bottom:20px; }
+.estado-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 18px; border-radius:24px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px; font-weight:700; letter-spacing:.5px;
+  margin-bottom:16px;
+}
+.badge-libre { background:rgba(255,255,255,.06); color:var(--muted2); border:1px solid var(--border); }
+.badge-activo { background:rgba(46,204,113,.12); color:var(--green); border:1px solid rgba(46,204,113,.3); }
+.badge-descanso { background:rgba(241,196,15,.12); color:var(--yellow); border:1px solid rgba(241,196,15,.3); }
+.badge-completo { background:rgba(107,63,160,.15); color:var(--purple2); border:1px solid rgba(107,63,160,.3); }
+
+.horas-display { font-family:'Barlow Condensed',sans-serif; font-size:48px; font-weight:900; color:var(--teal); line-height:1; margin-bottom:4px; }
+.horas-sub { font-size:12px; color:var(--muted); margin-bottom:20px; }
+
+.timeline { text-align:left; margin-top:16px; border-top:1px solid var(--border); padding-top:16px; }
+.tl-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; font-size:13px; }
+.tl-label { color:var(--muted); display:flex; align-items:center; gap:8px; }
+.tl-value { font-weight:600; }
+.tl-dot { width:8px; height:8px; border-radius:50%; }
+
+/* ACCIONES */
+.acciones-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px;
+}
+.acc-title { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; letter-spacing:1px; margin-bottom:20px; color:var(--muted2); text-transform:uppercase; }
+.acciones-btns { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+.accion-btn {
+  background:var(--card2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px 16px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+}
+.accion-btn:hover:not(.disabled) { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
+.accion-btn:active:not(.disabled) { transform:scale(.97); }
+.accion-btn.disabled { opacity:.3; pointer-events:none; }
+.accion-btn.entrada { border-color:rgba(46,204,113,.25); }
+.accion-btn.entrada:hover { background:rgba(46,204,113,.08); border-color:rgba(46,204,113,.5); }
+.accion-btn.descanso-s { border-color:rgba(241,196,15,.25); }
+.accion-btn.descanso-s:hover { background:rgba(241,196,15,.08); border-color:rgba(241,196,15,.5); }
+.accion-btn.descanso-e { border-color:rgba(230,126,34,.25); }
+.accion-btn.descanso-e:hover { background:rgba(230,126,34,.08); border-color:rgba(230,126,34,.5); }
+.accion-btn.salida { border-color:rgba(231,76,60,.25); }
+.accion-btn.salida:hover { background:rgba(231,76,60,.08); border-color:rgba(231,76,60,.5); }
+.accion-icon { font-size:32px; margin-bottom:8px; }
+.accion-label { font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:700; letter-spacing:.5px; }
+.accion-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+
+.corregir-btn {
+  width:100%; background:rgba(231,76,60,.08);
+  border:1px solid rgba(231,76,60,.25);
+  color:var(--red); padding:11px;
+  border-radius:10px; font-size:13px; font-weight:600;
+  margin-top:8px; transition:all .2s;
+  display:none;
+}
+.corregir-btn:hover { background:rgba(231,76,60,.15); }
+
+/* QR mini */
+.qr-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:24px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  margin-top:24px;
+}
+.qr-info h3 { font-family:'Barlow Condensed',sans-serif; font-size:17px; font-weight:800; margin-bottom:4px; }
+.qr-info p { font-size:12px; color:var(--muted); }
+
+/* BANNER TARDANZA */
+.late-banner {
+  background:rgba(231,76,60,.08);
+  border:1px solid rgba(231,76,60,.25);
+  border-radius:12px; padding:12px 16px;
+  font-size:13px; display:flex; gap:10px; align-items:center;
+  margin-bottom:16px; display:none;
+}
+
+/* ══════ CÁMARA MODAL ══════ */
+.camera-overlay {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.92);
+  z-index:500;
+  align-items:center;
+  justify-content:center;
+}
+.camera-overlay.open { display:flex; }
+.camera-box {
+  background:var(--dark2);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:32px;
+  width:520px;
+  text-align:center;
+}
+.cam-title { font-family:'Barlow Condensed',sans-serif; font-size:24px; font-weight:800; letter-spacing:1px; margin-bottom:4px; }
+.cam-sub { font-size:13px; color:var(--muted); margin-bottom:20px; }
+.cam-video {
+  width:100%; max-width:420px;
+  height:320px;
+  border-radius:16px;
+  object-fit:cover;
+  border:2px solid var(--teal);
+  background:#000;
+  display:block;
+  margin:0 auto;
+}
+.cam-canvas { display:none; }
+.cam-foto-preview {
+  width:100%; max-width:420px;
+  height:280px;
+  border-radius:16px;
+  object-fit:cover;
+  border:2px solid var(--green);
+  display:none;
+  margin:0 auto;
+}
+.cam-actions { display:flex; gap:12px; margin-top:20px; }
+.cam-btn {
+  flex:1; padding:14px;
+  border-radius:10px;
+  font-size:14px; font-weight:700;
+  border:none; transition:all .2s;
+}
+.cam-capture { background:var(--teal); color:#000; }
+.cam-capture:hover { background:var(--teal3); }
+.cam-retake { background:rgba(255,255,255,.08); color:var(--text); display:none; }
+.cam-confirm { background:var(--green); color:#000; display:none; }
+.cam-cancel { background:rgba(231,76,60,.15); color:var(--red); border:1px solid rgba(231,76,60,.3) !important; }
+
+/* ══════ HISTORIAL TAB ══════ */
+.historial-filters {
+  display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;
+}
+.f-btn {
+  background:none; border:1px solid var(--border);
+  color:var(--muted2); padding:6px 16px;
+  border-radius:20px; font-size:12px; font-weight:600;
+  transition:all .2s; letter-spacing:.3px;
+}
+.f-btn.active { background:var(--teal); color:#000; border-color:var(--teal); }
+.f-btn:hover:not(.active) { border-color:var(--muted); color:var(--text); }
+.export-btn {
+  margin-left:auto;
+  background:rgba(107,63,160,.2);
+  border:1px solid rgba(107,63,160,.3);
+  color:var(--purple2); padding:7px 16px;
+  border-radius:8px; font-size:12px; font-weight:600;
+  transition:all .2s;
+}
+.export-btn:hover { background:rgba(107,63,160,.3); }
+
+.hist-table {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.hist-thead {
+  display:grid;
+  grid-template-columns:180px 90px 90px 90px 90px 80px 70px;
+  background:rgba(255,255,255,.04);
+  border-bottom:1px solid var(--border);
+  padding:10px 16px;
+  font-size:10px; font-weight:700; letter-spacing:1px;
+  text-transform:uppercase; color:var(--muted);
+}
+.hist-row-grid {
+  display:grid;
+  grid-template-columns:180px 90px 90px 90px 90px 80px 70px;
+  padding:12px 16px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  align-items:center;
+  font-size:13px;
+  transition:background .15s;
+}
+.hist-row-grid:hover { background:var(--card2); }
+.hist-row-grid:last-child { border-bottom:none; }
+.hist-name { font-weight:600; display:flex; align-items:center; gap:8px; }
+.hist-emp-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.hist-time { color:var(--muted2); font-size:12px; }
+.hist-total-val { font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; color:var(--teal); }
+.foto-thumb { width:36px; height:36px; border-radius:6px; object-fit:cover; cursor:pointer; transition:transform .2s; }
+.foto-thumb:hover { transform:scale(1.1); }
+.no-foto { width:36px; height:36px; border-radius:6px; background:var(--card2); border:1px dashed var(--border); display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--muted); }
+
+/* ══════ ADMIN TAB ══════ */
+.admin-header {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;
+}
+.admin-stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; }
+.stat-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+}
+.stat-num { font-family:'Barlow Condensed',sans-serif; font-size:36px; font-weight:900; line-height:1; margin-bottom:4px; }
+.stat-lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+
+.gimnasio-tabs { display:flex; gap:8px; margin-bottom:20px; }
+.gym-tab {
+  padding:8px 20px; border-radius:8px;
+  font-size:13px; font-weight:700;
+  border:1px solid var(--border);
+  background:none; color:var(--muted2);
+  transition:all .2s;
+}
+.gym-tab.active { background:rgba(0,196,180,.1); color:var(--teal); border-color:var(--border2); }
+
+.admin-grid { display:grid; grid-template-columns:1fr 360px; gap:20px; }
+
+.empleados-list { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.emp-list-header {
+  padding:14px 20px; border-bottom:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.emp-list-title { font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; letter-spacing:.5px; }
+.add-emp-btn {
+  background:var(--teal); color:#000;
+  border:none; padding:7px 16px;
+  border-radius:8px; font-size:12px; font-weight:700;
+}
+.add-emp-btn:hover { background:var(--teal3); }
+
+.emp-item {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 20px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  transition:background .15s;
+}
+.emp-item:hover { background:var(--card2); }
+.emp-item:last-child { border-bottom:none; }
+.emp-avatar {
+  width:40px; height:40px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:14px; font-weight:800; flex-shrink:0;
+}
+.emp-info { flex:1; }
+.emp-name { font-size:14px; font-weight:600; margin-bottom:2px; }
+.emp-meta { font-size:11px; color:var(--muted); display:flex; gap:10px; }
+.emp-pin-badge { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; color:var(--teal); letter-spacing:2px; }
+.emp-actions { display:flex; gap:6px; }
+.emp-act-btn {
+  padding:5px 10px; border-radius:6px;
+  font-size:11px; font-weight:600;
+  border:1px solid var(--border);
+  background:none; color:var(--muted2);
+  transition:all .2s;
+}
+.emp-act-btn:hover { background:var(--card2); color:var(--text); }
+.emp-act-btn.del:hover { border-color:rgba(231,76,60,.4); color:var(--red); }
+
+/* FORM CARD */
+.form-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+}
+.form-title { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:800; letter-spacing:.5px; margin-bottom:20px; }
+.form-group { margin-bottom:16px; }
+.form-label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:6px; }
+.form-input {
+  width:100%;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 14px;
+  color:var(--text); font-size:13px; outline:none;
+  transition:border .2s;
+}
+.form-input:focus { border-color:var(--teal); }
+.form-select {
+  width:100%;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 14px;
+  color:var(--text); font-size:13px; outline:none;
+  transition:border .2s;
+  -webkit-appearance:none;
+}
+.form-select option { background:var(--dark2); }
+.form-select:focus { border-color:var(--teal); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-btn {
+  width:100%; background:var(--teal); color:#000;
+  border:none; padding:12px;
+  border-radius:10px; font-size:14px; font-weight:700;
+  margin-top:4px; transition:all .2s;
+}
+.form-btn:hover { background:var(--teal3); }
+
+/* Status */
+.status-pill { padding:3px 10px; border-radius:10px; font-size:11px; font-weight:700; }
+.s-verde { background:rgba(46,204,113,.12); color:var(--green); }
+.s-amarillo { background:rgba(241,196,15,.12); color:var(--yellow); }
+.s-rojo { background:rgba(231,76,60,.12); color:var(--red); }
+.s-gris { background:rgba(255,255,255,.06); color:var(--muted2); }
+
+/* ══════ LOGIN / SETUP ══════ */
+.fullscreen {
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(ellipse at 30% 40%, rgba(107,63,160,.25), transparent 55%),
+             radial-gradient(ellipse at 80% 70%, rgba(0,196,180,.1), transparent 50%),
+             var(--dark);
+}
+.center-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:40px 36px;
+  width:400px;
+  text-align:center;
+}
+.card-logo { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:3px; color:var(--teal); margin-bottom:6px; }
+.card-title { font-family:'Barlow Condensed',sans-serif; font-size:38px; font-weight:900; letter-spacing:1px; margin-bottom:4px; }
+.card-sub { font-size:13px; color:var(--muted); margin-bottom:28px; }
+
+.pin-display { display:flex; gap:12px; justify-content:center; margin-bottom:24px; }
+.pin-dot { width:16px; height:16px; border-radius:50%; border:2px solid var(--muted); transition:all .2s; }
+.pin-dot.filled { background:var(--teal); border-color:var(--teal); box-shadow:0 0 10px rgba(0,196,180,.4); }
+
+.keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+.key {
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:24px; font-weight:700;
+  cursor:pointer;
+  transition:all .15s;
+  user-select:none;
+  color:var(--text);
+}
+.key:hover { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.2); }
+.key:active { background:rgba(0,196,180,.2); border-color:var(--teal); transform:scale(.94); }
+.key.del { font-size:18px; color:var(--muted); }
+.key.empty { visibility:hidden; }
+.login-hint { font-size:12px; color:var(--muted); }
+
+/* Setup */
+.setup-input {
+  width:100%;
+  background:rgba(255,255,255,.08);
+  border:2px solid rgba(0,196,180,.3);
+  border-radius:12px;
+  padding:16px;
+  color:#fff; font-size:28px;
+  letter-spacing:10px; text-align:center;
+  outline:none;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  margin-bottom:8px;
+}
+.setup-input:focus { border-color:var(--teal); }
+.setup-btn {
+  width:100%; background:var(--teal); color:#000;
+  border:none; padding:15px;
+  border-radius:12px; font-size:16px; font-weight:700;
+  transition:all .2s;
+}
+.setup-btn:hover { background:var(--teal3); }
+.setup-note { font-size:12px; color:var(--muted); margin-top:12px; line-height:1.6; }
+
+/* ══════ FOTO MODAL ══════ */
+.foto-modal {
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.95);
+  z-index:600;
+  align-items:center;
+  justify-content:center;
+}
+.foto-modal.open { display:flex; }
+.foto-modal img { max-width:90vw; max-height:90vh; border-radius:12px; }
+.foto-modal-close {
+  position:fixed; top:20px; right:20px;
+  background:rgba(255,255,255,.1); border:none; color:#fff;
+  width:40px; height:40px; border-radius:50%;
+  font-size:20px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+}
+
+/* ══════ TOAST ══════ */
+.toast {
+  position:fixed; bottom:32px; left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--teal); color:#000;
+  padding:12px 24px; border-radius:28px;
+  font-size:13px; font-weight:700;
+  z-index:999; transition:all .3s;
+  pointer-events:none; opacity:0;
+  white-space:nowrap; max-width:90vw; text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+.toast.error { background:var(--red); color:#fff; }
+.toast.warn { background:var(--yellow); color:#000; }
+.toast.info { background:var(--purple2); color:#fff; }
+
+/* Empty state */
+.empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
+.empty-icon { font-size:48px; margin-bottom:12px; opacity:.4; }
+.empty-text { font-size:14px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); border-radius:3px; }
+
+/* ══════ RESPONSIVE ══════ */
+@media (max-width: 900px) {
+  .app-layout { grid-template-columns:1fr; grid-template-rows:auto auto 1fr; }
+  .sidebar { grid-row:auto; height:auto; flex-direction:row; align-items:center; padding:14px 20px; position:sticky; top:0; z-index:100; border-right:none; border-bottom:1px solid var(--border); }
+  .sidebar-brand { padding:0 20px 0 0; border-bottom:none; border-right:1px solid var(--border); margin-bottom:0; }
+  .nav-links { display:flex; padding:0 12px; flex:1; }
+  .sidebar-user { padding:0 0 0 20px; border-top:none; border-left:1px solid var(--border); margin-top:0; }
+  .su-actions { margin-top:0; }
+  .checar-grid { grid-template-columns:1fr; }
+  .admin-grid { grid-template-columns:1fr; }
+  .admin-stats-row { grid-template-columns:repeat(2,1fr); }
+  .hist-thead { display:none; }
+  .hist-row-grid { grid-template-columns:1fr 1fr; gap:4px; }
+  .main-content { padding:20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- SETUP (primera vez) -->
+<!-- ══════════════════════════════════════════ -->
+<div id="setup-screen" class="fullscreen" style="display:none">
+  <div class="center-card">
+    <div class="card-logo">Anytime Fitness</div>
+    <div class="card-title">BIENVENIDO</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.7">
+      Bienvenida Diana. Define tu PIN personal para comenzar.<br>
+      Con este PIN accedes al checador <strong style="color:var(--teal)">y</strong> al panel de administración de <strong style="color:var(--teal)">José María Iglesias y Cantera</strong>.
+    </p>
+    <div style="margin-bottom:20px;text-align:left;">
+      <label style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px;">PIN de administradora (Diana)</label>
+      <input id="setup-admin-pin" type="tel" inputmode="numeric" pattern="[0-9]*"
+        placeholder="4 dígitos" maxlength="4" autocomplete="off" class="setup-input">
+    </div>
+    <button class="setup-btn" onclick="guardarConfig()">Empezar →</button>
+    <p class="setup-note">Este PIN solo lo sabe Diana. Da acceso completo al panel de administración de ambos gimnasios.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- LOGIN -->
+<!-- ══════════════════════════════════════════ -->
+<div id="login-screen" class="fullscreen" style="display:none">
+  <div class="center-card">
+    <div class="card-logo">Anytime Fitness · Chihuahua</div>
+    <div class="card-title">CHECADOR</div>
+    <div class="card-sub">Ingresa tu PIN para registrarte</div>
+    <div class="pin-display" id="pin-display">
+      <div class="pin-dot" id="dot-0"></div>
+      <div class="pin-dot" id="dot-1"></div>
+      <div class="pin-dot" id="dot-2"></div>
+      <div class="pin-dot" id="dot-3"></div>
+    </div>
+    <div class="keypad">
+      <div class="key" onclick="presionarTecla('1')">1</div>
+      <div class="key" onclick="presionarTecla('2')">2</div>
+      <div class="key" onclick="presionarTecla('3')">3</div>
+      <div class="key" onclick="presionarTecla('4')">4</div>
+      <div class="key" onclick="presionarTecla('5')">5</div>
+      <div class="key" onclick="presionarTecla('6')">6</div>
+      <div class="key" onclick="presionarTecla('7')">7</div>
+      <div class="key" onclick="presionarTecla('8')">8</div>
+      <div class="key" onclick="presionarTecla('9')">9</div>
+      <div class="key empty"></div>
+      <div class="key" onclick="presionarTecla('0')">0</div>
+      <div class="key del" onclick="borrarTecla()">⌫</div>
+    </div>
+    <div class="login-hint" id="login-hint">PIN de 4 dígitos</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- APP PRINCIPAL -->
+<!-- ══════════════════════════════════════════ -->
+<div id="app-screen" class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">Anytime Fitness</div>
+      <div class="brand-name">AF <span>CHIHUAHUA</span></div>
+    </div>
+    <nav class="nav-links">
+      <button class="nav-link active" id="nav-checar" onclick="cambiarTab('checar',this)">
+        <span class="nav-icon">⏱</span> Checar
+      </button>
+      <button class="nav-link" id="nav-historial" onclick="cambiarTab('historial',this)">
+        <span class="nav-icon">📋</span> Mi historial
+      </button>
+      <button class="nav-link" id="nav-admin" onclick="cambiarTab('admin',this)" style="display:none">
+        <span class="nav-icon">🏢</span> Admin
+        <span class="nav-badge">Diana</span>
+      </button>
+    </nav>
+    <div class="sidebar-user">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div id="su-avatar" class="emp-avatar" style="width:38px;height:38px;font-size:13px;background:#333;"></div>
+        <div>
+          <div class="su-name" id="su-name">—</div>
+          <div class="su-rol" id="su-rol">—</div>
+          <div id="su-admin-badge" style="display:none;font-size:9px;font-weight:700;letter-spacing:1px;color:var(--teal);text-transform:uppercase;margin-top:2px;">✦ Admin + Empleada</div>
+        </div>
+      </div>
+      <div class="su-actions">
+        <button class="su-btn" onclick="abrirConfigWA()">📱 WhatsApp</button>
+        <button class="su-btn" id="btn-instalar" onclick="instalarPWA()" style="display:none">📲 Instalar app</button>
+        <button class="su-btn danger" onclick="cerrarSesion()">Salir</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-title" id="topbar-title">Checar entrada / salida</div>
+    <div class="topbar-right">
+      <div id="online-pill" class="online-pill on"><div class="online-dot"></div> EN LÍNEA</div>
+      <div>
+        <div class="clock-display" id="app-clock">00:00</div>
+        <div class="date-display" id="app-date">—</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- TAB: CHECAR -->
+    <div class="tab-panel active" id="tab-checar">
+      <div id="late-banner" class="late-banner">
+        <span>⚠️</span><span id="late-msg"></span>
+      </div>
+      <div class="checar-grid">
+        <!-- Estado -->
+        <div>
+          <div class="estado-card" id="estado-box">
+            <div class="estado-emp-avatar" id="est-avatar"></div>
+            <div class="estado-emp-name" id="est-name">—</div>
+            <div class="estado-emp-rol" id="est-rol">—</div>
+            <div class="estado-badge badge-libre" id="estado-badge">⏸ Sin registro hoy</div>
+            <div class="horas-display" id="est-horas" style="display:none">0h 0m</div>
+            <div class="horas-sub" id="est-horas-sub" style="display:none">horas trabajadas hoy</div>
+            <div class="timeline" id="est-timeline" style="display:none">
+              <div class="tl-row"><span class="tl-label"><span class="tl-dot" style="background:var(--green)"></span>Entrada</span><span class="tl-value" id="tl-entrada">—</span></div>
+              <div class="tl-row"><span class="tl-label"><span class="tl-dot" style="background:var(--yellow)"></span>Descanso</span><span class="tl-value" id="tl-descanso">—</span></div>
+              <div class="tl-row"><span class="tl-label"><span class="tl-dot" style="background:var(--red)"></span>Salida</span><span class="tl-value" id="tl-salida">—</span></div>
+            </div>
+          </div>
+
+          <div class="qr-card" id="qr-card">
+            <div id="qr-container"></div>
+            <div class="qr-info">
+              <h3>Mi código QR</h3>
+              <p>Muéstralo para registro rápido</p>
+              <p style="margin-top:6px;font-size:12px;color:var(--muted)">PIN: <strong id="qr-pin-label"></strong></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="acciones-card">
+          <div class="acc-title">Registrar acción</div>
+          <div class="acciones-btns">
+            <div class="accion-btn entrada" id="btn-entrada" onclick="iniciarAccion('entrada')" style="cursor:pointer">
+              <div class="accion-icon">▶</div>
+              <div class="accion-label">Entrada</div>
+              <div class="accion-sub">Iniciar turno</div>
+            </div>
+            <div class="accion-btn descanso-s disabled" id="btn-desc-s" onclick="iniciarAccion('descanso_inicio')">
+              <div class="accion-icon">☕</div>
+              <div class="accion-label">Descanso</div>
+              <div class="accion-sub">Iniciar pausa</div>
+            </div>
+            <div class="accion-btn descanso-e disabled" id="btn-desc-e" onclick="iniciarAccion('descanso_fin')">
+              <div class="accion-icon">↩</div>
+              <div class="accion-label">Regreso</div>
+              <div class="accion-sub">Fin de pausa</div>
+            </div>
+            <div class="accion-btn salida disabled" id="btn-salida" onclick="iniciarAccion('salida')">
+              <div class="accion-icon">⏹</div>
+              <div class="accion-label">Salida</div>
+              <div class="accion-sub">Terminar turno</div>
+            </div>
+          </div>
+          <button class="corregir-btn" id="btn-corregir" onclick="corregirSalida()">↩ Corregir salida por error (máx. 30 min)</button>
+
+          <!-- Info foto obligatoria -->
+          <div style="background:rgba(0,196,180,.06);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;margin-top:4px;font-size:12px;color:var(--muted2);display:flex;gap:10px;align-items:center;">
+            <span style="font-size:20px;">📸</span>
+            <span>Se tomará <strong style="color:var(--teal)">foto automática</strong> con cada registro de entrada y salida.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: HISTORIAL -->
+    <div class="tab-panel" id="tab-historial">
+      <div class="historial-filters">
+        <button class="f-btn active" onclick="cambiarFiltroHist('hoy',this)">Hoy</button>
+        <button class="f-btn" onclick="cambiarFiltroHist('semana',this)">7 días</button>
+        <button class="f-btn" onclick="cambiarFiltroHist('mes',this)">Este mes</button>
+        <button class="export-btn" onclick="exportarCSV()">⬇ Exportar CSV</button>
+      </div>
+      <div id="historial-container">
+        <div class="hist-table">
+          <div class="hist-thead">
+            <span>Empleado</span><span>Entrada</span><span>Descanso</span><span>Regreso</span><span>Salida</span><span>Total</span><span>Foto</span>
+          </div>
+          <div id="historial-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: ADMIN (DIANA) -->
+    <div class="tab-panel" id="tab-admin">
+
+      <!-- Gimnasio selector -->
+      <div class="admin-header">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--teal);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Panel de Administración</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;letter-spacing:.5px;">Diana Córdova</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Vista de registros</div>
+          <div class="gimnasio-tabs">
+            <button class="gym-tab active" id="gym-tab-todos" onclick="cambiarGym('todos',this)">Todos</button>
+            <button class="gym-tab" id="gym-tab-cantera" onclick="cambiarGym('jmi',this)">José María Iglesias</button>
+            <button class="gym-tab" id="gym-tab-segundo" onclick="cambiarGym('segundo',this)" id="gym-tab-2">Cantera</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="admin-stats-row" id="admin-stats">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-presentes" style="color:var(--green)">0</div>
+          <div class="stat-lbl">Presentes hoy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-ausentes" style="color:var(--red)">0</div>
+          <div class="stat-lbl">Ausentes hoy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-descanso" style="color:var(--yellow)">0</div>
+          <div class="stat-lbl">En descanso</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-total-emp" style="color:var(--purple2)">0</div>
+          <div class="stat-lbl">Total empleados</div>
+        </div>
+      </div>
+
+      <!-- Filtros admin -->
+      <div class="historial-filters" style="margin-bottom:16px;">
+        <button class="f-btn active" onclick="cambiarFiltroAdmin('hoy',this)">Hoy</button>
+        <button class="f-btn" onclick="cambiarFiltroAdmin('semana',this)">7 días</button>
+        <button class="f-btn" onclick="cambiarFiltroAdmin('mes',this)">Este mes</button>
+        <button class="export-btn" onclick="exportarCSVAdmin()">⬇ Exportar CSV</button>
+      </div>
+
+      <div class="admin-grid">
+        <!-- Registros -->
+        <div>
+          <div class="hist-table">
+            <div class="hist-thead">
+              <span>Empleado</span><span>Entrada</span><span>Descanso</span><span>Regreso</span><span>Salida</span><span>Total</span><span>Foto</span>
+            </div>
+            <div id="admin-registros-list"></div>
+          </div>
+        </div>
+
+        <!-- Panel empleados -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="empleados-list">
+            <div class="emp-list-header">
+              <div class="emp-list-title">Empleados</div>
+              <button class="add-emp-btn" onclick="mostrarFormEmp()">+ Agregar</button>
+            </div>
+            <div id="empleados-admin-list"></div>
+          </div>
+          <div class="form-card" id="form-emp-card" style="display:none">
+            <div class="form-title" id="form-emp-title">Nuevo empleado</div>
+            <input type="hidden" id="edit-emp-id">
+            <div class="form-group">
+              <label class="form-label">Nombre completo</label>
+              <input type="text" class="form-input" id="emp-nombre" placeholder="Ej. Juan García">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Rol</label>
+                <select class="form-select" id="emp-rol">
+                  <option>Gerente</option>
+                  <option>Entrenador</option>
+                  <option>Asistente de Venta</option>
+                  <option>Limpieza</option>
+                  <option>Otro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">PIN (4 dígitos)</label>
+                <input type="tel" class="form-input" id="emp-pin" placeholder="1234" maxlength="4" inputmode="numeric">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Entrada esperada</label>
+                <input type="time" class="form-input" id="emp-entrada-hora" value="08:00">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Salida esperada</label>
+                <input type="time" class="form-input" id="emp-salida-hora" value="17:00">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gimnasio</label>
+              <select class="form-select" id="emp-gimnasio">
+                <option value="jmi">José María Iglesias</option>
+                <option value="cantera" id="opt-segundo">Cantera</option>
+              </select>
+            </div>
+            <button class="form-btn" onclick="guardarEmpleado()">Guardar empleado</button>
+            <button style="width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:10px;border-radius:10px;font-size:13px;margin-top:8px;" onclick="ocultarFormEmp()">Cancelar</button>
+          </div>
+
+          <!-- Config gimnasios -->
+          <div class="form-card">
+            <div class="form-title">⚙️ Nombres de gimnasios</div>
+            <div class="form-group">
+              <label class="form-label">Gimnasio 1</label>
+              <input type="text" class="form-input" id="gym-name-1" placeholder="José María Iglesias" value="José María Iglesias">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gimnasio 2</label>
+              <input type="text" class="form-input" id="gym-name-2" placeholder="Cantera" value="Cantera">
+            </div>
+            <div class="form-group">
+              <label class="form-label">WhatsApp gerente (notificaciones)</label>
+              <input type="tel" class="form-input" id="wa-gerente-input" placeholder="+52 614 406 8254" value="+526144068254">
+            </div>
+            <button class="form-btn" onclick="guardarConfigGym()">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- CÁMARA MODAL -->
+<!-- ══════════════════════════════════════════ -->
+<div id="camera-overlay" class="camera-overlay">
+  <div class="camera-box">
+    <div class="cam-title" id="cam-title">📸 Foto de entrada</div>
+    <div class="cam-sub">Mira a la cámara y toma tu foto</div>
+    <video id="cam-video" class="cam-video" autoplay playsinline muted></video>
+    <canvas id="cam-canvas" class="cam-canvas"></canvas>
+    <img id="cam-preview" class="cam-foto-preview" alt="foto">
+    <!-- FALLBACK cuando cámara no disponible -->
+    <div id="cam-fallback-box" style="display:none;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);border-radius:14px;padding:20px;margin-bottom:16px;max-width:420px;width:100%;margin-left:auto;margin-right:auto;">
+      <div style="font-size:28px;margin-bottom:8px;">📷</div>
+      <div id="cam-fallback-msg" style="font-size:13px;color:var(--muted2);line-height:1.6;margin-bottom:16px;white-space:pre-line;"></div>
+      <div style="display:flex;gap:10px;flex-direction:column;">
+        <button onclick="fallbackSubirFoto()" style="background:var(--teal);color:#000;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">
+          📂 Subir foto desde archivo
+        </button>
+        <button onclick="fallbackSinFoto()" style="background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted2);padding:10px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
+          Registrar sin foto (no recomendado)
+        </button>
+      </div>
+    </div>
+    <input type="file" id="cam-file-input" accept="image/*" capture="user" style="display:none" onchange="fallbackFileChange(this)">
+
+    <div class="cam-actions">
+      <button class="cam-btn cam-cancel" onclick="cancelarCamara()">Cancelar</button>
+      <button class="cam-btn cam-capture" id="cam-capture-btn" onclick="capturarFoto()">📸 Tomar foto</button>
+      <button class="cam-btn cam-retake" id="cam-retake-btn" onclick="retomar()">↩ Retomar</button>
+      <button class="cam-btn cam-confirm" id="cam-confirm-btn" onclick="confirmarFoto()">✓ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOTO FULLSCREEN -->
+<div id="foto-modal" class="foto-modal" onclick="this.classList.remove('open')">
+  <button class="foto-modal-close">✕</button>
+  <img id="foto-modal-img" src="" alt="foto">
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// CONSTANTES
+// ══════════════════════════════════════════
+const APP_VERSION = '14';
+const CFG_KEY = 'af_config_v3';
+const EMP_KEY = 'af_empleados_v3';
+const WA_GERENTE_KEY = 'af_wa_gerente';
+const WA_GERENTE_DEFAULT = '526144068254';
+const COLA_KEY = 'af_cola_sync';
+const OFFLINE_REGS_KEY = 'af_offline_regs';
+const GYM_NAMES_KEY = 'af_gym_names';
+
+const SUPA_URL = 'https://diifaeelwqkzazkzenuf.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpaWZhZWVsd3FremF6a3plbnVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NzgwOTQsImV4cCI6MjA4OTU1NDA5NH0.CogEFwOepWBeeuhLMt0iuQievmy-O6mZo3Zp8ehqJpM';
+
+const TOLERANCIA_MIN = 10;
+
+// ══════════════════════════════════════════
+// GEOLOCALIZACIÓN — GIMNASIOS
+// ══════════════════════════════════════════
+const GIMNASIOS_GEO = {
+  jmi:     { lat: 28.67405, lng: -106.11382, nombre: 'José María Iglesias', radio: 150 },
+  cantera: { lat: 28.64594, lng: -106.14228, nombre: 'Cantera', radio: 150 },
+};
+// Radio en metros — 150m permite pequeñas imprecisiones del GPS
+
+const EMPLEADOS_DEFAULT = [
+  {id:1,nombre:'Diana Córdova',rol:'Gerente General',pin:'0000',color:'#8b5cc8',entrada:'08:00',salida:'17:00',gimnasio:'jmi'},
+];
+
+let config = JSON.parse(localStorage.getItem(CFG_KEY) || 'null');
+let empleados = JSON.parse(localStorage.getItem(EMP_KEY) || 'null') || EMPLEADOS_DEFAULT;
+let gymNames = JSON.parse(localStorage.getItem(GYM_NAMES_KEY) || 'null') || {gym1:'Cantera', gym2:'Sucursal 2'};
+let usuarioActual = null;
+let pinBuffer = '';
+let accionPendiente = null;
+let fotoCapturada = null;
+let streamCamara = null;
+let adminDesbloqueado = false;
+let filtroHistorial = 'hoy';
+let filtroAdmin = 'hoy';
+let gymFiltro = 'todos';
+let registrosCache = [];
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function init() {
+  // Reset si hay versión anterior
+  const savedVer = localStorage.getItem('af_app_version');
+  if (savedVer && parseInt(savedVer) < 14) {
+    localStorage.clear();
+    toast('🔄 Sistema actualizado — configura tu PIN nuevamente', 'info');
+  }
+  localStorage.setItem('af_app_version', APP_VERSION);
+  // Guardar WhatsApp de Diana si no está guardado
+  if (!localStorage.getItem(WA_GERENTE_KEY)) {
+    localStorage.setItem(WA_GERENTE_KEY, WA_GERENTE_DEFAULT);
+  }
+  actualizarNombresGym();
+  if (!config) {
+    const adminPin = localStorage.getItem('af_admin_pin');
+    if (!adminPin) { mostrar('setup-screen'); return; }
+    config = { supaUrl: SUPA_URL, supaKey: SUPA_KEY, adminPin };
+    localStorage.setItem(CFG_KEY, JSON.stringify(config));
+  } else {
+    config.supaUrl = SUPA_URL; config.supaKey = SUPA_KEY;
+    localStorage.setItem(CFG_KEY, JSON.stringify(config));
+  }
+  mostrar('login-screen');
+  iniciarReloj();
+}
+
+function actualizarNombresGym() {
+  gymNames = JSON.parse(localStorage.getItem(GYM_NAMES_KEY) || 'null') || {gym1:'José María Iglesias', gym2:'Cantera'};
+  if (!localStorage.getItem(GYM_NAMES_KEY)) {
+    localStorage.setItem(GYM_NAMES_KEY, JSON.stringify({gym1:'José María Iglesias', gym2:'Cantera'}));
+  }
+  const t2 = document.getElementById('gym-tab-2');
+  if (t2) t2.textContent = gymNames.gym2;
+  const opt = document.getElementById('opt-segundo');
+  if (opt) opt.textContent = gymNames.gym2;
+  const tabCantera = document.getElementById('gym-tab-cantera');
+  if (tabCantera) tabCantera.textContent = gymNames.gym1;
+  const n1 = document.getElementById('gym-name-1');
+  if (n1) n1.value = gymNames.gym1;
+  const n2 = document.getElementById('gym-name-2');
+  if (n2) n2.value = gymNames.gym2;
+}
+
+function mostrar(id) {
+  ['setup-screen','login-screen'].forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.style.display='none';
+  });
+  const app = document.getElementById('app-screen');
+  if (app) app.classList.remove('active');
+  if (id === 'app-screen') {
+    app.classList.add('active');
+  } else {
+    const el = document.getElementById(id);
+    if (el) el.style.display='flex';
+  }
+}
+
+// ══════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════
+function guardarConfig() {
+  const adminPin = document.getElementById('setup-admin-pin').value.trim();
+  if (!adminPin || adminPin.length < 4) { toast('El PIN debe tener 4 dígitos', 'error'); return; }
+  config = { supaUrl: SUPA_URL, supaKey: SUPA_KEY, adminPin };
+  localStorage.setItem(CFG_KEY, JSON.stringify(config));
+  localStorage.setItem('af_admin_pin', adminPin);
+  mostrar('login-screen');
+  iniciarReloj();
+  toast('✅ Sistema configurado');
+}
+
+// ══════════════════════════════════════════
+// RELOJ
+// ══════════════════════════════════════════
+function iniciarReloj() {
+  actualizarReloj();
+  setInterval(actualizarReloj, 1000);
+}
+function actualizarReloj() {
+  const now = new Date();
+  const cl = document.getElementById('app-clock');
+  if (cl) cl.textContent = now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const dt = document.getElementById('app-date');
+  if (dt) dt.textContent = now.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+}
+
+// ══════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════
+function presionarTecla(d) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += d;
+  actualizarDots();
+  if (pinBuffer.length === 4) setTimeout(verificarPin, 180);
+}
+function borrarTecla() { pinBuffer = pinBuffer.slice(0,-1); actualizarDots(); }
+function actualizarDots() {
+  for (let i=0; i<4; i++) {
+    document.getElementById('dot-'+i).classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+function verificarPin() {
+  if (config && pinBuffer === config.adminPin) {
+    // Buscar a Diana en la lista de empleados para que pueda checar
+    const dianaEmp = empleados.find(e => e.pin === pinBuffer);
+    if (dianaEmp) {
+      usuarioActual = {...dianaEmp, esAdmin:true};
+    } else {
+      // Si no está en empleados, usar perfil por defecto con id especial
+      usuarioActual = {id:'admin', nombre:'Diana Córdova', rol:'Administradora', color:'#8b5cc8', pin:config.adminPin, esAdmin:true, gimnasio:'cantera'};
+    }
+    entrarApp(); return;
+  }
+  const emp = empleados.find(e => e.pin === pinBuffer);
+  if (emp) { usuarioActual = emp; entrarApp(); }
+  else {
+    toast('PIN incorrecto', 'error');
+    const hint = document.getElementById('login-hint');
+    if (hint) { hint.textContent = 'PIN incorrecto'; hint.style.color='var(--red)'; setTimeout(()=>{hint.textContent='PIN de 4 dígitos';hint.style.color='';},1500); }
+    pinBuffer = ''; actualizarDots();
+  }
+}
+function entrarApp() {
+  mostrar('app-screen');
+  const ini = usuarioActual.nombre.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
+  document.getElementById('su-avatar').textContent = ini;
+  document.getElementById('su-avatar').style.background = (usuarioActual.color||'#6b3fa0')+'33';
+  document.getElementById('su-avatar').style.color = usuarioActual.color||'#8b5cc8';
+  document.getElementById('su-name').textContent = usuarioActual.nombre;
+  document.getElementById('su-rol').textContent = usuarioActual.rol;
+  const adminBadge = document.getElementById('su-admin-badge');
+  if (adminBadge) adminBadge.style.display = usuarioActual.esAdmin ? 'block' : 'none';
+  if (usuarioActual.esAdmin) {
+    document.getElementById('nav-admin').style.display='flex';
+    adminDesbloqueado = true;
+  } else {
+    document.getElementById('nav-admin').style.display='none';
+    adminDesbloqueado = false;
+  }
+  actualizarConexion();
+  cambiarTab('checar', document.getElementById('nav-checar'));
+  generarQR();
+}
+function cerrarSesion() {
+  usuarioActual = null; pinBuffer = ''; adminDesbloqueado = false;
+  for (let i=0; i<4; i++) document.getElementById('dot-'+i).classList.remove('filled');
+  mostrar('login-screen');
+  if (streamCamara) { streamCamara.getTracks().forEach(t=>t.stop()); streamCamara=null; }
+}
+
+// ══════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════
+function cambiarTab(tab, btn) {
+  ['checar','historial','admin'].forEach(t => {
+    const el = document.getElementById('tab-'+t); if(el) el.classList.remove('active');
+  });
+  document.querySelectorAll('.nav-link').forEach(b=>b.classList.remove('active'));
+  const target = document.getElementById('tab-'+tab);
+  if (target) target.classList.add('active');
+  if (btn) btn.classList.add('active');
+  const titles = {checar:'Checar entrada / salida', historial:'Mi historial', admin:'Panel Administración — Diana'};
+  document.getElementById('topbar-title').textContent = titles[tab]||'';
+  if (tab==='historial') cargarHistorial();
+  if (tab==='admin' && adminDesbloqueado) cargarAdmin();
+  if (tab==='checar') cargarEstadoHoy();
+}
+
+// ══════════════════════════════════════════
+// SUPABASE
+// ══════════════════════════════════════════
+async function supaFetch(endpoint, method='GET', body=null) {
+  if (!config) return null;
+  const opts = {
+    method,
+    headers:{
+      'Content-Type':'application/json',
+      'apikey': config.supaKey,
+      'Authorization':'Bearer '+config.supaKey,
+      'Prefer':'return=representation'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(config.supaUrl+'/rest/v1/'+endpoint, opts);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+async function guardarRegistro(reg) {
+  const localId = 'local_'+Date.now();
+  reg._localId = localId;
+  // Comprimir foto para no exceder límite de Supabase
+  if (reg.foto_entrada && reg.foto_entrada.length > 100000) {
+    reg.foto_entrada = await comprimirFoto(reg.foto_entrada, 0.3);
+  }
+  if (reg.foto_salida && reg.foto_salida.length > 100000) {
+    reg.foto_salida = await comprimirFoto(reg.foto_salida, 0.3);
+  }
+  const local = JSON.parse(localStorage.getItem(OFFLINE_REGS_KEY)||'[]');
+  local.push(reg);
+  localStorage.setItem(OFFLINE_REGS_KEY, JSON.stringify(local));
+  if (navigator.onLine) {
+    // Quitar _localId antes de enviar a Supabase
+    const regSupa = {...reg};
+    delete regSupa._localId;
+    const res = await supaFetch('checador_registros','POST',regSupa);
+    if (res&&res[0]) {
+      const lr = JSON.parse(localStorage.getItem(OFFLINE_REGS_KEY)||'[]');
+      const idx = lr.findIndex(r=>r._localId===localId);
+      if (idx>=0){lr[idx].id=res[0].id; localStorage.setItem(OFFLINE_REGS_KEY,JSON.stringify(lr));}
+      toast('☁️ Registro guardado en la nube');
+      return res[0];
+    } else {
+      console.error('Error guardando en Supabase — guardado solo local');
+      toast('⚠️ Guardado localmente — se sincronizará después','warn');
+    }
+  } else {
+    agregarACola('nuevo', reg);
+    toast('📵 Sin internet — guardado localmente','warn');
+  }
+  return reg;
+}
+
+async function comprimirFoto(dataUrl, calidad=0.3) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxW = 400;
+      const ratio = Math.min(maxW/img.width, maxW/img.height);
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', calidad));
+    };
+    img.src = dataUrl;
+  });
+}
+
+async function actualizarRegistro(id, datos) {
+  const local = JSON.parse(localStorage.getItem(OFFLINE_REGS_KEY)||'[]');
+  const idx = local.findIndex(r=>r.id===id||r._localId===id);
+  if (idx>=0){local[idx]={...local[idx],...datos}; localStorage.setItem(OFFLINE_REGS_KEY,JSON.stringify(local));}
+  if (navigator.onLine) await supaFetch(`checador_registros?id=eq.${id}`,'PATCH',datos);
+  else if (local[idx]) agregarACola('actualizar',{_localId:local[idx]._localId, campos:datos});
+}
+
+async function obtenerRegistros(filtro='hoy') {
+  if (navigator.onLine) {
+    let q = 'checador_registros?order=entrada.desc';
+    if (filtro==='hoy'){const h=new Date().toISOString().split('T')[0]; q+=`&fecha=eq.${h}`;}
+    else if (filtro==='semana'){const i=new Date(); i.setDate(i.getDate()-7); q+=`&entrada=gte.${i.toISOString()}`;}
+    else if (filtro==='mes'){const i=new Date(); i.setDate(1); q+=`&entrada=gte.${i.toISOString()}`;}
+    const res = await supaFetch(q);
+    if (res&&res.length>=0){registrosCache=res; return res;}
+  }
+  let local = JSON.parse(localStorage.getItem(OFFLINE_REGS_KEY)||'[]');
+  if (filtro==='hoy'){const h=new Date().toISOString().split('T')[0]; local=local.filter(r=>r.fecha===h);}
+  registrosCache=local; return local;
+}
+
+async function obtenerRegistroHoy(empId) {
+  const hoy = new Date().toISOString().split('T')[0];
+  if (navigator.onLine) {
+    // Primero buscar turno activo (sin salida)
+    const activo = await supaFetch(`checador_registros?emp_id=eq.${empId}&fecha=eq.${hoy}&salida=is.null&order=entrada.desc&limit=1`);
+    if (activo&&activo.length>0) return activo[0];
+    // Si no hay activo, devolver el más reciente
+    const res = await supaFetch(`checador_registros?emp_id=eq.${empId}&fecha=eq.${hoy}&order=entrada.desc&limit=1`);
+    if (res&&res.length>0) return res[0];
+  }
+  const local = JSON.parse(localStorage.getItem(OFFLINE_REGS_KEY)||'[]');
+  const deHoy = local.filter(r=>r.emp_id===empId&&r.fecha===hoy).sort((a,b)=>new Date(b.entrada||0)-new Date(a.entrada||0));
+  // Buscar activo primero
+  const activo = deHoy.find(r=>!r.salida);
+  return activo || deHoy[0] || null;
+}
+
+// ══════════════════════════════════════════
+// COLA OFFLINE
+// ══════════════════════════════════════════
+function agregarACola(tipo,datos) {
+  const cola = JSON.parse(localStorage.getItem(COLA_KEY)||'[]');
+  cola.push({tipo,datos,timestamp:new Date().toISOString()});
+  localStorage.setItem(COLA_KEY,JSON.stringify(cola));
+}
+
+async function sincronizarCola() {
+  if (!navigator.onLine) return;
+  const cola = JSON.parse(localStorage.getItem(COLA_KEY)||'[]');
+  if (!cola.length) return;
+  const pendientes = [...cola];
+  localStorage.setItem(COLA_KEY,'[]');
+  for (const item of pendientes) {
+    try {
+      if (item.tipo==='nuevo') await supaFetch('checador_registros','POST',item.datos);
+      else if (item.tipo==='actualizar') {
+        const local=JSON.parse(localStorage.getItem(OFFLINE_REGS_KEY)||'[]');
+        const r=local.find(x=>x._localId===item.datos._localId);
+        if (r&&r.id) await supaFetch(`checador_registros?id=eq.${r.id}`,'PATCH',item.datos.campos);
+      }
+    } catch {}
+  }
+  toast('☁️ Registros sincronizados');
+}
+
+// ══════════════════════════════════════════
+// ESTADO HOY
+// ══════════════════════════════════════════
+async function cargarEstadoHoy() {
+  if (!usuarioActual) return;
+  // Default: habilitar entrada por si la consulta falla
+  const _btnE = document.getElementById('btn-entrada');
+  if (_btnE) _btnE.classList.remove('disabled');
+  const emp = usuarioActual;
+  const ini = emp.nombre.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
+  document.getElementById('est-avatar').textContent = ini;
+  document.getElementById('est-avatar').style.background = (emp.color||'#6b3fa0')+'33';
+  document.getElementById('est-avatar').style.color = emp.color||'#8b5cc8';
+  document.getElementById('est-name').textContent = emp.nombre;
+  document.getElementById('est-rol').textContent = emp.rol;
+  document.getElementById('qr-pin-label').textContent = emp.pin;
+
+  const r = await obtenerRegistroHoy(emp.id);
+  const badge = document.getElementById('estado-badge');
+  const horas = document.getElementById('est-horas');
+  const horasSub = document.getElementById('est-horas-sub');
+  const tl = document.getElementById('est-timeline');
+  const lateBanner = document.getElementById('late-banner');
+  lateBanner.style.display='none';
+
+  // Habilitar/deshabilitar botones
+  const btnE = document.getElementById('btn-entrada');
+  const btnDS = document.getElementById('btn-desc-s');
+  const btnDE = document.getElementById('btn-desc-e');
+  const btnS = document.getElementById('btn-salida');
+  const btnC = document.getElementById('btn-corregir');
+
+  if (!r || !r.entrada) {
+    badge.className='estado-badge badge-libre'; badge.textContent='⏸ Sin registro hoy';
+    horas.style.display='none'; horasSub.style.display='none'; tl.style.display='none';
+    btnE.classList.remove('disabled'); btnDS.classList.add('disabled');
+    btnDE.classList.add('disabled'); btnS.classList.add('disabled');
+    btnC.style.display='none';
+  } else if (r.entrada && !r.salida) {
+    if (!r.descanso_inicio) {
+      badge.className='estado-badge badge-activo'; badge.innerHTML='<span style="animation:pulse 1.5s infinite">🟢</span> Turno activo';
+      btnE.classList.add('disabled'); btnDS.classList.remove('disabled');
+      btnDE.classList.add('disabled'); btnS.classList.remove('disabled');
+    } else if (r.descanso_inicio && !r.descanso_fin) {
+      badge.className='estado-badge badge-descanso'; badge.textContent='☕ En descanso';
+      btnE.classList.add('disabled'); btnDS.classList.add('disabled');
+      btnDE.classList.remove('disabled'); btnS.classList.add('disabled');
+    } else {
+      badge.className='estado-badge badge-activo'; badge.innerHTML='<span style="animation:pulse 1.5s infinite">🟢</span> Turno activo';
+      btnE.classList.add('disabled'); btnDS.classList.add('disabled');
+      btnDE.classList.add('disabled'); btnS.classList.remove('disabled');
+    }
+    const h = calcHoras(r.entrada, null, r.descanso_inicio, r.descanso_fin);
+    if(h){horas.textContent=h; horas.style.display='block'; horasSub.style.display='block';}
+    tl.style.display='block';
+    document.getElementById('tl-entrada').textContent = horaStr(r.entrada);
+    document.getElementById('tl-descanso').textContent = r.descanso_inicio ? horaStr(r.descanso_inicio) : '—';
+    document.getElementById('tl-salida').textContent = '—';
+    btnC.style.display='none';
+  } else if (r.salida) {
+    badge.className='estado-badge badge-completo'; badge.textContent='✓ Turno completo';
+    btnE.classList.add('disabled'); btnDS.classList.add('disabled');
+    btnDE.classList.add('disabled'); btnS.classList.add('disabled');
+    const h = calcHoras(r.entrada, r.salida, r.descanso_inicio, r.descanso_fin);
+    if(h){horas.textContent=h; horas.style.display='block'; horasSub.style.display='block';}
+    tl.style.display='block';
+    document.getElementById('tl-entrada').textContent = horaStr(r.entrada);
+    document.getElementById('tl-descanso').textContent = r.descanso_inicio ? `${horaStr(r.descanso_inicio)} – ${horaStr(r.descanso_fin)||'?'}` : '—';
+    document.getElementById('tl-salida').textContent = horaStr(r.salida);
+    const diff = calcMinutos(r.salida, new Date().toISOString());
+    btnC.style.display = diff<=30 ? 'block':'none';
+  }
+
+  // Tardanza
+  if (r && r.entrada && emp.entrada) {
+    const alerta = verificarPuntualidad(emp,'entrada',r.entrada);
+    if (alerta && alerta.tipo==='tardanza') {
+      lateBanner.style.display='flex';
+      document.getElementById('late-msg').textContent = `Tardanza de ${alerta.minutos} min — esperado ${alerta.esperado}, entrada a las ${alerta.real}`;
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+// ACCIÓN + CÁMARA
+// ══════════════════════════════════════════
+let accionActual = null;
+
+async function iniciarAccion(tipo) {
+  if (!usuarioActual) return;
+  const ids = {entrada:'btn-entrada', descanso_inicio:'btn-desc-s', descanso_fin:'btn-desc-e', salida:'btn-salida'};
+  const btn = document.getElementById(ids[tipo]);
+  if (btn && btn.classList.contains('disabled')) return;
+  accionActual = tipo;
+  // Solo verificar ubicación en entrada y salida
+  if (tipo === 'entrada' || tipo === 'salida') {
+    toast('📍 Verificando ubicación...', 'info');
+    try {
+      const geo = await verificarUbicacion();
+      if (geo.msg) toast(geo.msg);
+    } catch(err) {
+      toast(err.msg || 'No se pudo verificar ubicación', 'error');
+      accionActual = null;
+      return;
+    }
+  }
+  const labels = {entrada:'Foto de entrada', descanso_inicio:'Foto — inicio descanso', descanso_fin:'Foto — regreso de descanso', salida:'Foto de salida'};
+  document.getElementById('cam-title').textContent = '📸 ' + (labels[tipo]||tipo);
+  await abrirCamara();
+}
+
+async function abrirCamara() {
+  const overlay = document.getElementById('camera-overlay');
+  overlay.classList.add('open');
+  document.getElementById('cam-video').style.display='block';
+  document.getElementById('cam-preview').style.display='none';
+  document.getElementById('cam-capture-btn').style.display='block';
+  document.getElementById('cam-retake-btn').style.display='none';
+  document.getElementById('cam-confirm-btn').style.display='none';
+  document.getElementById('cam-fallback-box').style.display='none';
+  fotoCapturada = null;
+
+  try {
+  // Verificar si getUserMedia está disponible
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    mostrarFallbackCamara('Tu navegador no soporta cámara directa.');
+    return;
+  }
+
+  // En file:// la cámara siempre falla — mostrar fallback inmediato
+  if (location.protocol === 'file:') {
+    mostrarFallbackCamara('El archivo está abierto desde el disco local.\nPara usar la cámara, ábrelo desde un servidor (Netlify, localhost, etc.).');
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'user', width:{ideal:1280}, height:{ideal:720}},
+      audio:false
+    });
+    streamCamara = stream;
+    document.getElementById('cam-video').srcObject = stream;
+  } catch(e) {
+    let msg = 'No se pudo acceder a la cámara.';
+    console.error('Camera error:', e.name, e.message);
+    if (e.name==='NotAllowedError') msg = 'Permiso de cámara denegado.\nHaz clic en el candado 🔒 en la barra del navegador y permite la cámara.';
+    else if (e.name==='NotFoundError') msg = 'No se encontró ninguna cámara en este equipo.';
+    else if (e.name==='NotReadableError') msg = 'La cámara está siendo usada por otra aplicación.';
+    mostrarFallbackCamara(msg);
+  }
+  } catch(globalErr) {
+    console.error('abrirCamara global error:', globalErr);
+    mostrarFallbackCamara('Error inesperado: ' + globalErr.message);
+  }
+}
+
+function mostrarFallbackCamara(msg) {
+  document.getElementById('cam-video').style.display='none';
+  document.getElementById('cam-capture-btn').style.display='none';
+  const box = document.getElementById('cam-fallback-box');
+  box.style.display='block';
+  document.getElementById('cam-fallback-msg').textContent = msg;
+}
+
+function fallbackSubirFoto() {
+  document.getElementById('cam-file-input').click();
+}
+
+function fallbackFileChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    fotoCapturada = ev.target.result;
+    const preview = document.getElementById('cam-preview');
+    preview.src = fotoCapturada;
+    preview.style.display='block';
+    document.getElementById('cam-fallback-box').style.display='none';
+    document.getElementById('cam-retake-btn').style.display='block';
+    document.getElementById('cam-confirm-btn').style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function fallbackSinFoto() {
+  fotoCapturada = null;
+  cerrarCamara();
+  procesarAccion(accionActual, null);
+  accionActual = null;
+}
+
+function capturarFoto() {
+  const video = document.getElementById('cam-video');
+  const canvas = document.getElementById('cam-canvas');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  fotoCapturada = canvas.toDataURL('image/jpeg', 0.7);
+  const preview = document.getElementById('cam-preview');
+  preview.src = fotoCapturada;
+  preview.style.display='block';
+  video.style.display='none';
+  document.getElementById('cam-capture-btn').style.display='none';
+  document.getElementById('cam-retake-btn').style.display='block';
+  document.getElementById('cam-confirm-btn').style.display='block';
+}
+
+function retomar() {
+  const video = document.getElementById('cam-video');
+  document.getElementById('cam-preview').style.display='none';
+  video.style.display='block';
+  document.getElementById('cam-capture-btn').style.display='block';
+  document.getElementById('cam-retake-btn').style.display='none';
+  document.getElementById('cam-confirm-btn').style.display='none';
+  fotoCapturada = null;
+}
+
+async function confirmarFoto() {
+  cerrarCamara();
+  await procesarAccion(accionActual, fotoCapturada);
+  accionActual = null;
+  fotoCapturada = null;
+}
+
+function cancelarCamara() {
+  cerrarCamara();
+  accionActual = null;
+  fotoCapturada = null;
+}
+
+function cerrarCamara() {
+  document.getElementById('camera-overlay').classList.remove('open');
+  if (streamCamara) { streamCamara.getTracks().forEach(t=>t.stop()); streamCamara=null; }
+}
+
+// ══════════════════════════════════════════
+// GEOLOCALIZACIÓN
+// ══════════════════════════════════════════
+function distanciaMetros(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLng = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+    Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+    Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function verificarUbicacion() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) { resolve({ok:true, msg:''}); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        const emp = usuarioActual;
+        const gymKey = emp?.gimnasio || 'jmi';
+        const gym = GIMNASIOS_GEO[gymKey];
+        if (!gym) { resolve({ok:true, msg:''}); return; }
+        const dist = Math.round(distanciaMetros(lat, lng, gym.lat, gym.lng));
+        if (dist <= gym.radio) {
+          resolve({ok:true, msg:`✅ Ubicación verificada (${dist}m del gimnasio)`});
+        } else {
+          reject({msg:`📍 No estás en ${gym.nombre}.
+Distancia detectada: ${dist}m
+Debes estar dentro del gimnasio para registrar.`});
+        }
+      },
+      (err) => {
+        // Si no da permiso de ubicación, bloqueamos el registro
+        if (err.code === 1) {
+          reject({msg:'📍 Debes permitir el acceso a tu ubicación.\n\nHaz clic en el candado en la barra del navegador y permite Ubicación.'});
+        } else {
+          // Error técnico — permitir con advertencia
+          resolve({ok:true, msg:''});
+        }
+      },
+      { timeout: 8000, maximumAge: 60000, enableHighAccuracy: true }
+    );
+  });
+}
+
+// ══════════════════════════════════════════
+// PROCESAR ACCIÓN
+// ══════════════════════════════════════════
+async function procesarAccion(tipo, foto) {
+  if (!usuarioActual) return;
+  const emp = usuarioActual;
+  const hoy = new Date().toISOString().split('T')[0];
+  const ahora = new Date().toISOString();
+  let r = await obtenerRegistroHoy(emp.id);
+
+  if (tipo === 'entrada') {
+    // Permitir nueva entrada si ya hay salida (horario dividido)
+    if (r && r.entrada && !r.salida) { toast('Ya tienes turno activo — registra salida primero','warn'); return; }
+    const reg = { emp_id:emp.id, emp_nombre:emp.nombre, emp_rol:emp.rol, emp_color:emp.color, emp_gimnasio:emp.gimnasio||'cantera', fecha:hoy, entrada:ahora, foto_entrada:foto };
+    await guardarRegistro(reg);
+    toast('✅ Entrada registrada — '+horaStr(ahora));
+    const alerta = verificarPuntualidad(emp,'entrada',ahora);
+    if (alerta?.tipo==='tardanza') enviarNotificacionWA(emp,alerta);
+  } else if (tipo === 'descanso_inicio') {
+    if (!r || !r.entrada || r.salida) { toast('Sin turno activo','error'); return; }
+    await actualizarRegistro(r.id||r._localId, {descanso_inicio:ahora});
+    toast('☕ Descanso iniciado — '+horaStr(ahora));
+  } else if (tipo === 'descanso_fin') {
+    if (!r || !r.descanso_inicio) { toast('No hay descanso activo','error'); return; }
+    await actualizarRegistro(r.id||r._localId, {descanso_fin:ahora});
+    toast('▶ Regreso registrado — '+horaStr(ahora));
+  } else if (tipo === 'salida') {
+    if (!r || !r.entrada || r.salida) { toast('Sin turno activo','error'); return; }
+    await actualizarRegistro(r.id||r._localId, {salida:ahora, foto_salida:foto});
+    toast('⏹ Salida registrada — '+horaStr(ahora));
+    const alerta = verificarPuntualidad(emp,'salida',ahora);
+    if (alerta?.tipo==='salida_anticipada') enviarNotificacionWA(emp,alerta);
+  }
+  cargarEstadoHoy();
+}
+
+// ══════════════════════════════════════════
+// CORREGIR SALIDA
+// ══════════════════════════════════════════
+async function corregirSalida() {
+  if (!usuarioActual) return;
+  const r = await obtenerRegistroHoy(usuarioActual.id);
+  if (!r||!r.salida){toast('No hay salida registrada hoy','error');return;}
+  const diff = calcMinutos(r.salida, new Date().toISOString());
+  if (diff>30){toast('Solo se puede corregir dentro de 30 min de la salida','error');return;}
+  if (!confirm(`¿Corregir salida registrada a las ${horaStr(r.salida)}? Tu turno continuará activo.`)) return;
+  await actualizarRegistro(r.id||r._localId,{salida:null,foto_salida:null});
+  toast('✅ Salida corregida — continúa tu turno');
+  cargarEstadoHoy();
+}
+
+// ══════════════════════════════════════════
+// HISTORIAL (empleado)
+// ══════════════════════════════════════════
+function cambiarFiltroHist(f, btn) {
+  filtroHistorial=f;
+  document.querySelectorAll('.historial-filters .f-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  cargarHistorial();
+}
+
+async function cargarHistorial() {
+  if (!usuarioActual) return;
+  const lista = document.getElementById('historial-list');
+  lista.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Cargando...</div>';
+  const todos = await obtenerRegistros(filtroHistorial);
+  const regs = todos.filter(r=>r.emp_id===usuarioActual.id);
+  if (!regs.length){lista.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Sin registros en este período</div></div>';return;}
+  // Agrupar por fecha y calcular total del día
+  const porFecha = {};
+  regs.forEach(r => {
+    if (!porFecha[r.fecha]) porFecha[r.fecha] = [];
+    porFecha[r.fecha].push(r);
+  });
+
+  let html = '';
+  Object.keys(porFecha).sort((a,b)=>b.localeCompare(a)).forEach(fecha => {
+    const registros = porFecha[fecha];
+    // Calcular total de minutos del día
+    let totalMs = 0;
+    registros.forEach(r => {
+      if (r.entrada) {
+        const fin = r.salida ? new Date(r.salida) : new Date();
+        let ms = fin - new Date(r.entrada);
+        if (r.descanso_inicio && r.descanso_fin) ms -= (new Date(r.descanso_fin) - new Date(r.descanso_inicio));
+        if (ms > 0) totalMs += ms;
+      }
+    });
+    const totalH = Math.floor(totalMs/3600000);
+    const totalM = Math.floor((totalMs%3600000)/60000);
+    const totalStr = totalMs > 0 ? `${totalH}h ${totalM}m` : '—';
+
+    // Mostrar cada turno del día
+    registros.forEach((r, i) => {
+      html += `<div class="hist-row-grid" style="${i>0?'border-top:1px dashed rgba(255,255,255,0.05)':''}">
+        <span class="hist-name">
+          <span class="hist-emp-dot" style="background:${usuarioActual.color||'#8b5cc8'}"></span>
+          ${r.emp_nombre||usuarioActual.nombre}
+          ${registros.length>1?`<span style="font-size:9px;color:var(--muted);margin-left:4px;">turno ${i+1}</span>`:''}
+        </span>
+        <span class="hist-time">${horaStr(r.entrada)}</span>
+        <span class="hist-time">${r.descanso_inicio?horaStr(r.descanso_inicio):'—'}</span>
+        <span class="hist-time">${r.descanso_fin?horaStr(r.descanso_fin):'—'}</span>
+        <span class="hist-time">${r.salida?horaStr(r.salida):'<span style="color:var(--yellow)">Activo</span>'}</span>
+        <span class="hist-total-val">${i===registros.length-1?totalStr:calcHoras(r.entrada,r.salida,r.descanso_inicio,r.descanso_fin)||'—'}</span>
+        <span style="display:flex;gap:4px;">
+          ${r.foto_entrada?`<img src="${r.foto_entrada}" class="foto-thumb" onclick="verFoto('${r.foto_entrada}')" title="Entrada">`:
+            '<div class="no-foto">🚫</div>'}
+          ${r.foto_salida?`<img src="${r.foto_salida}" class="foto-thumb" onclick="verFoto('${r.foto_salida}')" title="Salida">`:
+            r.salida?'<div class="no-foto" title="Sin foto salida">—</div>':''}
+        </span>
+      </div>`;
+    });
+  });
+  lista.innerHTML = html || '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Sin registros</div></div>';
+}
+
+// ══════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════
+function cambiarFiltroAdmin(f,btn) {
+  filtroAdmin=f;
+  document.querySelectorAll('#tab-admin .f-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  cargarAdmin();
+}
+
+function cambiarGym(gym,btn) {
+  gymFiltro=gym;
+  document.querySelectorAll('.gym-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  cargarAdmin();
+}
+
+async function cargarAdmin() {
+  if (!adminDesbloqueado) return;
+  cargarEmpleadosAdmin();
+  const todos = await obtenerRegistros(filtroAdmin);
+  const empsFiltrados = gymFiltro==='todos' ? empleados : empleados.filter(e=>e.gimnasio===gymFiltro);
+  const hoy = new Date().toISOString().split('T')[0];
+  const registrosHoy = todos.filter(r=>r.fecha===hoy);
+
+  let presentes=0, descanso=0;
+  empsFiltrados.forEach(emp=>{
+    const r = registrosHoy.find(x=>x.emp_id===emp.id);
+    if (r&&r.entrada&&!r.salida){ presentes++; if(r.descanso_inicio&&!r.descanso_fin) descanso++; }
+  });
+  document.getElementById('stat-presentes').textContent=presentes;
+  document.getElementById('stat-ausentes').textContent=empsFiltrados.length-presentes;
+  document.getElementById('stat-descanso').textContent=descanso;
+  document.getElementById('stat-total-emp').textContent=empsFiltrados.length;
+
+  // Filtrar registros por gimnasio si aplica
+  let regs = todos;
+  if (gymFiltro!=='todos') {
+    const ids = empleados.filter(e=>e.gimnasio===gymFiltro).map(e=>e.id);
+    regs = regs.filter(r=>ids.includes(r.emp_id));
+  }
+
+  const lista = document.getElementById('admin-registros-list');
+  if (!regs.length){lista.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Sin registros</div></div>';return;}
+  lista.innerHTML = regs.map(r=>{
+    const emp = empleados.find(e=>e.id===r.emp_id)||{color:'#8b5cc8',nombre:r.emp_nombre||'?'};
+    const estadoText = !r.salida&&r.entrada ? (r.descanso_inicio&&!r.descanso_fin?'descanso':'activo') : (r.salida?'completo':'—');
+    const estadoClass = {activo:'s-verde',descanso:'s-amarillo',completo:'s-gris','—':'s-gris'}[estadoText]||'s-gris';
+    return `<div class="hist-row-grid">
+      <span class="hist-name"><span class="hist-emp-dot" style="background:${emp.color}"></span>${r.emp_nombre||emp.nombre}
+        <span class="status-pill ${estadoClass}" style="font-size:9px;margin-left:4px;">${estadoText}</span>
+      </span>
+      <span class="hist-time">${horaStr(r.entrada)}</span>
+      <span class="hist-time">${r.descanso_inicio?horaStr(r.descanso_inicio):'—'}</span>
+      <span class="hist-time">${r.descanso_fin?horaStr(r.descanso_fin):'—'}</span>
+      <span class="hist-time">${r.salida?horaStr(r.salida):'<span style="color:var(--yellow)">Activo</span>'}</span>
+      <span class="hist-total-val">${calcHoras(r.entrada,r.salida,r.descanso_inicio,r.descanso_fin)||'—'}</span>
+      <span>${r.foto_entrada?`<img src="${r.foto_entrada}" class="foto-thumb" onclick="verFoto('${r.foto_entrada}')" title="Ver foto">`:
+        '<div class="no-foto">🚫</div>'}</span>
+    </div>`;
+  }).join('');
+}
+
+function cargarEmpleadosAdmin() {
+  const lista = document.getElementById('empleados-admin-list');
+  const empsFiltrados = gymFiltro==='todos' ? empleados : empleados.filter(e=>e.gimnasio===gymFiltro);
+  if (!empsFiltrados.length){lista.innerHTML='<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted);">Sin empleados</div>';return;}
+  lista.innerHTML = empsFiltrados.map(emp=>{
+    const ini = emp.nombre.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
+    const gymLabel = emp.gimnasio==='jmi' ? gymNames.gym1 : (emp.gimnasio==='cantera' ? gymNames.gym2 : emp.gimnasio);
+    return `<div class="emp-item">
+      <div class="emp-avatar" style="background:${emp.color||'#6b3fa0'}22;color:${emp.color||'#8b5cc8'}">${ini}</div>
+      <div class="emp-info">
+        <div class="emp-name">${emp.nombre}</div>
+        <div class="emp-meta">
+          <span>${emp.rol}</span>
+          <span style="color:var(--teal)">${gymLabel}</span>
+          <span>${emp.entrada||'—'} – ${emp.salida||'—'}</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <div class="emp-pin-badge">${emp.pin}</div>
+        <div class="emp-actions">
+          <button class="emp-act-btn" onclick="editarEmpleado(${emp.id})">✏️</button>
+          <button class="emp-act-btn del" onclick="borrarEmpleado(${emp.id})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function mostrarFormEmp() {
+  document.getElementById('form-emp-card').style.display='block';
+  document.getElementById('form-emp-title').textContent='Nuevo empleado';
+  document.getElementById('edit-emp-id').value='';
+  document.getElementById('emp-nombre').value='';
+  document.getElementById('emp-pin').value='';
+  document.getElementById('emp-rol').value='Entrenador';
+  document.getElementById('emp-entrada-hora').value='08:00';
+  document.getElementById('emp-salida-hora').value='17:00';
+  document.getElementById('emp-gimnasio').value='cantera';
+}
+
+function ocultarFormEmp() { document.getElementById('form-emp-card').style.display='none'; }
+
+function editarEmpleado(id) {
+  const emp = empleados.find(e=>e.id===id); if (!emp) return;
+  mostrarFormEmp();
+  document.getElementById('form-emp-title').textContent='Editar empleado';
+  document.getElementById('edit-emp-id').value=emp.id;
+  document.getElementById('emp-nombre').value=emp.nombre;
+  document.getElementById('emp-pin').value=emp.pin;
+  document.getElementById('emp-rol').value=emp.rol;
+  document.getElementById('emp-entrada-hora').value=emp.entrada||'08:00';
+  document.getElementById('emp-salida-hora').value=emp.salida||'17:00';
+  document.getElementById('emp-gimnasio').value=emp.gimnasio||'cantera';
+}
+
+function guardarEmpleado() {
+  const nombre = document.getElementById('emp-nombre').value.trim();
+  const pin = document.getElementById('emp-pin').value.trim();
+  const rol = document.getElementById('emp-rol').value;
+  const entrada = document.getElementById('emp-entrada-hora').value;
+  const salida = document.getElementById('emp-salida-hora').value;
+  const gimnasio = document.getElementById('emp-gimnasio').value;
+  const editId = document.getElementById('edit-emp-id').value;
+
+  if (!nombre){toast('Ingresa el nombre','error');return;}
+  if (!pin||pin.length!==4){toast('El PIN debe tener 4 dígitos','error');return;}
+  if (pin===config?.adminPin){toast('Ese PIN es el de administración','error');return;}
+
+  const colors=['#8b5cc8','#6b3fa0','#00c4b4','#00a89a','#f1c40f','#e67e22','#2ecc71','#e74c3c','#26c6da','#4db6ac','#ab47bc','#5c6bc0'];
+
+  if (editId) {
+    const idx = empleados.findIndex(e=>e.id===parseInt(editId));
+    if (idx>=0) {
+      if (empleados.find(e=>e.pin===pin&&e.id!==parseInt(editId))){toast('Ese PIN ya está en uso','error');return;}
+      empleados[idx]={...empleados[idx],nombre,pin,rol,entrada,salida,gimnasio};
+      toast('✅ Empleado actualizado');
+    }
+  } else {
+    if (empleados.find(e=>e.pin===pin)){toast('Ese PIN ya está en uso','error');return;}
+    const newId = Math.max(0,...empleados.map(e=>e.id))+1;
+    empleados.push({id:newId,nombre,pin,rol,entrada,salida,gimnasio,color:colors[newId%colors.length]});
+    toast('✅ Empleado agregado');
+  }
+  localStorage.setItem(EMP_KEY,JSON.stringify(empleados));
+  ocultarFormEmp();
+  cargarEmpleadosAdmin();
+}
+
+function borrarEmpleado(id) {
+  const emp = empleados.find(e=>e.id===id); if (!emp) return;
+  if (!confirm(`¿Eliminar a ${emp.nombre}? Sus registros históricos se conservan.`)) return;
+  empleados = empleados.filter(e=>e.id!==id);
+  localStorage.setItem(EMP_KEY,JSON.stringify(empleados));
+  cargarEmpleadosAdmin();
+  toast('🗑 Empleado eliminado');
+}
+
+function guardarConfigGym() {
+  const n1 = document.getElementById('gym-name-1').value.trim()||'Cantera';
+  const n2 = document.getElementById('gym-name-2').value.trim()||'Sucursal 2';
+  const wa = document.getElementById('wa-gerente-input').value.trim();
+  gymNames = {gym1:n1, gym2:n2};
+  localStorage.setItem(GYM_NAMES_KEY,JSON.stringify(gymNames));
+  if (wa) localStorage.setItem(WA_GERENTE_KEY,wa);
+  actualizarNombresGym();
+  toast('✅ Configuración guardada');
+  cargarAdmin();
+}
+
+function abrirConfigWA() {
+  const wa = localStorage.getItem(WA_GERENTE_KEY)||'';
+  const nuevo = prompt('Número WhatsApp para alertas (ej. +528100000000):', wa);
+  if (nuevo!==null) { localStorage.setItem(WA_GERENTE_KEY,nuevo); toast('✅ WhatsApp guardado'); }
+}
+
+// ══════════════════════════════════════════
+// EXPORT CSV
+// ══════════════════════════════════════════
+async function exportarCSV() {
+  const regs = await obtenerRegistros(filtroHistorial);
+  const mine = usuarioActual ? regs.filter(r=>r.emp_id===usuarioActual.id) : regs;
+  _generarCSV(mine, `historial_${usuarioActual?.nombre||'yo'}`);
+}
+async function exportarCSVAdmin() {
+  const regs = await obtenerRegistros(filtroAdmin);
+  let filtrados = regs;
+  if (gymFiltro!=='todos') {
+    const ids = empleados.filter(e=>e.gimnasio===gymFiltro).map(e=>e.id);
+    filtrados = regs.filter(r=>ids.includes(r.emp_id));
+  }
+  _generarCSV(filtrados, `admin_${gymFiltro}`);
+}
+function _generarCSV(regs, nombre) {
+  if (!regs.length){toast('Sin datos para exportar','warn');return;}
+  const header = ['Nombre','Rol','Gimnasio','Fecha','Entrada','Descanso Inicio','Descanso Fin','Salida','Total Horas'];
+  const rows = regs.map(r=>[
+    r.emp_nombre||'—', r.emp_rol||'—', r.emp_gimnasio||'—',
+    r.fecha||'—', horaStr(r.entrada), horaStr(r.descanso_inicio),
+    horaStr(r.descanso_fin), horaStr(r.salida),
+    calcHoras(r.entrada,r.salida,r.descanso_inicio,r.descanso_fin)||'—'
+  ]);
+  const csv = [header,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`${nombre}_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+  toast('📥 CSV exportado');
+}
+
+// ══════════════════════════════════════════
+// QR
+// ══════════════════════════════════════════
+function generarQR() {
+  const container = document.getElementById('qr-container');
+  container.innerHTML='';
+  if (!usuarioActual) return;
+  try {
+    new QRCode(container,{text:usuarioActual.pin,width:80,height:80,colorDark:'#00c4b4',colorLight:'#1a1a2e',correctLevel:QRCode.CorrectLevel.H});
+  } catch{}
+}
+
+// ══════════════════════════════════════════
+// VER FOTO
+// ══════════════════════════════════════════
+function verFoto(src) {
+  document.getElementById('foto-modal-img').src=src;
+  document.getElementById('foto-modal').classList.add('open');
+}
+
+// ══════════════════════════════════════════
+// CONEXIÓN
+// ══════════════════════════════════════════
+function actualizarConexion() {
+  const pill = document.getElementById('online-pill');
+  if (!pill) return;
+  if (navigator.onLine) {
+    pill.className='online-pill on'; pill.innerHTML='<div class="online-dot"></div> EN LÍNEA';
+    sincronizarCola();
+  } else {
+    pill.className='online-pill off'; pill.innerHTML='<div class="online-dot"></div> SIN INTERNET';
+  }
+}
+window.addEventListener('online', ()=>{ actualizarConexion(); setTimeout(sincronizarCola,1000); });
+window.addEventListener('offline', actualizarConexion);
+
+// ══════════════════════════════════════════
+// PUNTUALIDAD / WHATSAPP
+// ══════════════════════════════════════════
+function horaAMinutos(h){ if(!h)return null; const[hr,mn]=h.split(':').map(Number); return hr*60+mn; }
+function minutosAHora(m){ const h=Math.floor(m/60)%24,mn=m%60; return `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`; }
+
+function verificarPuntualidad(emp,tipo,horaReg) {
+  if (!emp.entrada&&!emp.salida) return null;
+  const ahora=new Date(horaReg), minAhora=ahora.getHours()*60+ahora.getMinutes();
+  if (tipo==='entrada'&&emp.entrada){const exp=horaAMinutos(emp.entrada),diff=minAhora-exp; if(diff>TOLERANCIA_MIN)return{tipo:'tardanza',minutos:diff,esperado:emp.entrada,real:minutosAHora(minAhora)};}
+  if (tipo==='salida'&&emp.salida){const exp=horaAMinutos(emp.salida),diff=exp-minAhora; if(diff>TOLERANCIA_MIN)return{tipo:'salida_anticipada',minutos:diff,esperado:emp.salida,real:minutosAHora(minAhora)};}
+  return null;
+}
+
+function enviarNotificacionWA(emp, alerta) {
+  const wa = localStorage.getItem(WA_GERENTE_KEY); if (!wa) return;
+  let msg='';
+  if (alerta.tipo==='tardanza') msg=`⚠️ *TARDANZA*\nEmpleado: ${emp.nombre}\nRol: ${emp.rol}\nGimnasio: ${emp.gimnasio||'—'}\nEsperado: ${alerta.esperado}\nEntrada: ${alerta.real}\nRetraso: ${alerta.minutos} min\nFecha: ${new Date().toLocaleDateString('es-MX')}`;
+  else if (alerta.tipo==='salida_anticipada') msg=`⚠️ *SALIDA ANTICIPADA*\nEmpleado: ${emp.nombre}\nRol: ${emp.rol}\nGimnasio: ${emp.gimnasio||'—'}\nEsperado: ${alerta.esperado}\nSalida: ${alerta.real}\nAnticipación: ${alerta.minutos} min\nFecha: ${new Date().toLocaleDateString('es-MX')}`;
+  if (msg) window.open(`https://wa.me/${wa.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function horaStr(iso){ if(!iso)return'—'; return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
+function calcHoras(entrada,salida,descI,descF){
+  if(!entrada) return null;
+  const fin = salida ? new Date(salida) : new Date();
+  let ms = fin - new Date(entrada);
+  if(descI&&descF) ms -= (new Date(descF)-new Date(descI));
+  else if(descI&&!descF) ms -= (new Date()-new Date(descI));
+  if(ms<0)ms=0;
+  const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);
+  return `${h}h ${m}m`;
+}
+function calcMinutos(a,b){ if(!a||!b)return 0; return Math.max(0,Math.round((new Date(b)-new Date(a))/60000)); }
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function toast(msg, tipo='ok') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast show${tipo!=='ok'?' '+tipo:''}`;
+  setTimeout(()=>t.className='toast',3500);
+}
+
+// ══════════════════════════════════════════
+// TECLADO FÍSICO (PC)
+// ══════════════════════════════════════════
+document.addEventListener('keydown', e=>{
+  const loginVisible = document.getElementById('login-screen').style.display!=='none';
+  if (!loginVisible) return;
+  if (e.key>='0'&&e.key<='9') presionarTecla(e.key);
+  else if (e.key==='Backspace') borrarTecla();
+  else if (e.key==='Enter'&&pinBuffer.length===4) verificarPin();
+});
+
+// ══════════════════════════════════════════
+// AUTO REFRESH cada 60s
+// ══════════════════════════════════════════
+setInterval(()=>{
+  if(usuarioActual) cargarEstadoHoy();
+  if(adminDesbloqueado) cargarAdmin();
+  if(navigator.onLine) sincronizarCola();
+}, 60000);
+
+// ══════════════════════════════════════════
+// PWA — INSTALACIÓN
+// ══════════════════════════════════════════
+let deferredPrompt = null;
+
+// Manifest dinámico
+const manifestData = {
+  name: 'Checador Anytime Fitness',
+  short_name: 'Checador AF',
+  description: 'Control de asistencia Anytime Fitness Chihuahua',
+  start_url: '/',
+  display: 'standalone',
+  background_color: '#0d0d14',
+  theme_color: '#00c4b4',
+  orientation: 'landscape',
+  icons: [
+    { src: 'https://via.placeholder.com/192x192/00c4b4/0d0d14?text=AF', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+    { src: 'https://via.placeholder.com/512x512/00c4b4/0d0d14?text=AF', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+  ]
+};
+
+
+// Capturar evento de instalación
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('btn-instalar');
+  if (btn) btn.style.display = 'block';
+  // Mostrar toast invitando a instalar
+  setTimeout(() => toast('📲 Puedes instalar esta app en tu escritorio', 'info'), 2000);
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  const btn = document.getElementById('btn-instalar');
+  if (btn) btn.style.display = 'none';
+  toast('✅ App instalada correctamente');
+});
+
+async function instalarPWA() {
+  if (!deferredPrompt) {
+    toast('Usa Chrome y abre desde la URL de Netlify para instalar', 'warn');
+    return;
+  }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') toast('✅ Instalando app...');
+  deferredPrompt = null;
+}
+
+// Service Worker para funcionar offline
+if ('serviceWorker' in navigator) {
+
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+init();
+actualizarConexion();
+</script>
+
+<style>
+@keyframes pulse {
+  0%,100%{opacity:1} 50%{opacity:.4}
+}
+</style>
+</body>
+</html>
